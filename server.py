@@ -50,12 +50,9 @@ def dining_hall():
     context = dict(data = dh)
     return render_template("dining_halls.html", **context)
 
-@app.route('/')
-def plan():
-    
-    # DEBUG: this is debugging code to see what request looks like
+@app.route('/plan')
+def plan(): 
     print(request.args)
-
     cursor = g.conn.execute("SELECT plan_name FROM dining_plan")
     plans = []
     for result in cursor:
@@ -64,7 +61,11 @@ def plan():
 
     context = dict(data = plans)
 
-    return render_template("dining_plan.html", **context)
+    return render_template("plan.html", **context)
+
+@app.route('/dining_plan')
+def dining_plan():
+    return render_template("dining_plan.html")
 
 @app.route('/another')
 def another():
