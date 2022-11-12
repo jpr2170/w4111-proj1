@@ -13,7 +13,8 @@ import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask,url_for, flash, request, render_template, g, redirect, Response
-from datetime import datetime
+from datetime import datetime, date
+
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'forms')
 app = Flask(__name__, template_folder=tmpl_dir)
 
@@ -107,8 +108,16 @@ def review(name):
         for result in cursor:
             rid = result[0]
         rid += 1
-        cursor = g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, createdate, comment) VALUES(%d,%d,%d,%d,%d,current_timestamp,%s)", rid, overall, food, vibe, staff, comment)
-        cursor = g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%d,%s,%s)", rid, user, name)
+        stamp = date.today()
+        cursor = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(user))
+        global uni
+        if cursor.fetchone() is not None:
+            for result in cursor:
+                uni = result[0]
+        else:
+            return render_template("auth.html")
+        g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, date, comment) VALUES(%s,%s,%s,%s,%s,%s,%s)", rid, overall, food, vibe, staff, stamp, comment)
+        g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, uni, name)
         cursor.close()
         return redirect('hall page',name)
     context = dict(hall_name = name)
