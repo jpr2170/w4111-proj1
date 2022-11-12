@@ -1,0 +1,37 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+    {% extends 'base.html' %}
+{% block header %}
+  <h1>{% block title %}Register{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="POST" action="/register">
+    <label for="uni">UNI</label>
+    <input type="text" name="uni" id="uni" required> 
+    <label for="name">Name</label>
+    <input type="text" name="name" required>
+    <label for="username">Username</label>
+    <input type="text" name="username" required>
+    <label for="year">Year</label>
+    <input type="int" name="year" required>
+    <label for="plan_name">Plan</label>
+    <input type="text" name="plan_name" required>
+    <input type="submit" value="Register">
+  </form>
+  {% endblock %}
+
+  <p><a href="home page">Go Home</a></p>
+
+</body>
+
+
+</html>

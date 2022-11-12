@@ -9,11 +9,10 @@
 
 <body>
   <h1>Columbia Dining Plans</h1>
-  <div>{{data}}</div>
 
   <div>
-    {% for n in data %}
-    <div>{{n}}</div>
+    {% for n in plan %}
+    <div>{{n[0]}}: ${{n[1]}}</div>
     {% endfor %}
   </div>
 
