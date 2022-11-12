@@ -1,0 +1,41 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+    
+    <h1>{{hall_name}}</h1>
+
+  <div>
+    {% for h in hours %}
+    <div>Open: {{h[0]}}</div>
+    <div>Close: {{h[1]}}</div>
+    {% endfor %}
+    {% for l in location %}
+    <div>Hall Name: {{l[0]}}</div> 
+    <div>Floor Number: {{l[1]}}</div>
+    {% endfor %}
+  </div>
+
+  <h2>Reviews</h2>
+  <div>
+    {% for r in review %}
+    <div>User: {{r[1]}}</div>
+    <div>Overall: {{r[4]}}</div>
+    <div>Comments: {{r[9]}}</div>
+    {% endfor %}
+  </div>
+
+  <p><a href="{{url_for('review', name = hall_name)}}">Leave a review</a></p>
+  <p><a href="/">Go back home</a></p>
+
+
+</body>
+
+
+</html>

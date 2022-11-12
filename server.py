@@ -12,7 +12,8 @@ import os
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask,url_for, flash, request, render_template, g, redirect, Response
+from datetime import datetime, date
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'forms')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -39,7 +40,7 @@ def teardown_request(exception):
         pass
 
 @app.route('/')
-def dining_hall():
+def home_page():
     print(request.args)
     cursor = g.conn.execute("SELECT hall_name FROM dining_hall")
     dh = []
@@ -48,43 +49,79 @@ def dining_hall():
     cursor.close()
 
     context = dict(data = dh)
-    return render_template("dining_halls.html", **context)
+    return render_template("home_page.html", **context)
 
 @app.route('/plan')
 def plan(): 
     print(request.args)
-    cursor = g.conn.execute("SELECT plan_name FROM dining_plan")
+    cursor = g.conn.execute("SELECT * FROM dining_plan")
     plans = []
     for result in cursor:
-        plans.append(result['plan_name'])  # can also be accessed using result[0]
+        plans.append(result)  # can also be accessed using result[0]
     cursor.close()
 
-    context = dict(data = plans)
-
+    context = dict(plan = plans)
     return render_template("plan.html", **context)
 
-@app.route('/dining_plan')
-def dining_plan():
-    return render_template("dining_plan.html")
-
-@app.route('/another')
-def another():
-    return render_template("another.html")
-
-
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO test(name) VALUES (%s)', name)
-  return redirect('/')
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method=='POST':
+        uni = request.form['uni']
+        name = request.form['name']
+        username = request.form['username']
+        year = request.form['year']
+        plan_name = request.form['plan_name']
+        g.conn.execute("INSERT INTO student(uni,name,username,year,plan_name) VALUES (%s, %s, %s, %s, %s)", uni, name, username, year, plan_name)
+        return redirect('/')
+    return render_template('auth.html')
 
 
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
+@app.route('/hall page/<name>')
+def hall_page(name):
+    print(request.args)
+    hall_name = name
+    time = []
+    loc = []
+    info = []
+    cursor = g.conn.execute("SELECT * FROM dining_hall WHERE hall_name = '{}'".format(name))
+    for result in cursor:
+        time.append(result[1:3])
+        loc.append(result[4:6])
+    cursor = g.conn.execute("SELECT * FROM writes W, review R WHERE W.rid=R.rid AND W.hall_name='{}'".format(name))
+    for result in cursor:
+        info.append(result)
+    cursor.close()
+    context = dict(hall_name = hall_name, location = loc, hours = time, review = info)
+    return render_template("hall_page.html", **context)
 
+
+@app.route('/review/<name>', methods=['GET', 'POST'])
+def review(name):
+    if request.method=='POST':
+        user = request.form['username']
+        food = int(request.form['food'])
+        vibe = int(request.form['vibe'])
+        staff = int(request.form['staff'])
+        overall = int((food+vibe+staff)/3)
+        comment = request.form['comment']
+        cursor = g.conn.execute("SELECT MAX(rid) FROM review")
+        for result in cursor:
+            rid = result[0]
+        rid += 1
+        stamp = date.today()
+        cursor = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(user))
+        global uni
+        if cursor.fetchone() is not None:
+            for result in cursor:
+                uni = result[0]
+        else:
+            return render_template("auth.html")
+        g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, date, comment) VALUES(%s,%s,%s,%s,%s,%s,%s)", rid, overall, food, vibe, staff, stamp, comment)
+        g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, uni, name)
+        cursor.close()
+        return redirect('hall page',name)
+    context = dict(hall_name = name)
+    return render_template('review.html', **context) 
 
 if __name__ == "__main__":
   import click
