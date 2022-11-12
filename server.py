@@ -98,6 +98,7 @@ def hall_page(name):
 @app.route('/review/<name>', methods=['GET', 'POST'])
 def review(name):
     if request.method=='POST':
+        UNI = ""
         user = request.form['username']
         food = int(request.form['food'])
         vibe = int(request.form['vibe'])
@@ -110,16 +111,13 @@ def review(name):
         rid += 1
         stamp = date.today()
         cursor = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(user))
-        global uni
-        if cursor.fetchone() is not None:
-            for result in cursor:
-                uni = result[0]
-        else:
-            return render_template("auth.html")
-        g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, date, comment) VALUES(%s,%s,%s,%s,%s,%s,%s)", rid, overall, food, vibe, staff, stamp, comment)
-        g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, uni, name)
+        UNI = cursor.fetchone()[0]
         cursor.close()
-        return redirect('hall page',name)
+        if UNI != "":
+            g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, date, comment) VALUES(%s,%s,%s,%s,%s,%s,%s)", rid, overall, food, vibe, staff, stamp, comment)
+            g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, UNI, name)
+            return redirect('hall page',name)
+        else: return render_template("auth.html")
     context = dict(hall_name = name)
     return render_template('review.html', **context) 
 
