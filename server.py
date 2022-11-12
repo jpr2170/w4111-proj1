@@ -13,7 +13,7 @@ import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask,url_for, flash, request, render_template, g, redirect, Response
-
+from datetime import datetime
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'forms')
 app = Flask(__name__, template_folder=tmpl_dir)
 
@@ -65,13 +65,12 @@ def plan():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method=='POST':
-        add_uni = request.form['uni']
-        add_name = request.form['name']
-        add_username = request.form['username']
-        add_year = request.form['year']
-        add_plan_name = request.form['plan_name']
-#    print(add_uni, add_name, add_username, add_year, add_plan_name)
-        g.conn.execute("INSERT INTO student(uni,name,username,year,plan_name) VALUES (%s, %s, %s, %s, %s)", add_uni, add_name, add_username, add_year, add_plan_name)
+        uni = request.form['uni']
+        name = request.form['name']
+        username = request.form['username']
+        year = request.form['year']
+        plan_name = request.form['plan_name']
+        g.conn.execute("INSERT INTO student(uni,name,username,year,plan_name) VALUES (%s, %s, %s, %s, %s)", uni, name, username, year, plan_name)
         return redirect('/')
     return render_template('auth.html')
 
@@ -94,15 +93,26 @@ def hall_page(name):
     context = dict(hall_name = hall_name, location = loc, hours = time, review = info)
     return render_template("hall_page.html", **context)
 
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  rid = g.conn.execute("SELECT MAX(rid) FROM review")
-  rid += 1
-  g.conn.execute('INSERT INTO (name) VALUES (%s)', name)
-  return redirect('/')
 
+@app.route('/review/<name>', methods=['GET', 'POST'])
+def review(name):
+    if request.method=='POST':
+        user = request.form['username']
+        food = int(request.form['food'])
+        vibe = int(request.form['vibe'])
+        staff = int(request.form['staff'])
+        overall = int((food+vibe+staff)/3)
+        comment = request.form['comment']
+        cursor = g.conn.execute("SELECT MAX(rid) FROM review")
+        for result in cursor:
+            rid = result[0]
+        rid += 1
+        cursor = g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, createdate, comment) VALUES(%d,%d,%d,%d,%d,current_timestamp,%s)", rid, overall, food, vibe, staff, comment)
+        cursor = g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%d,%s,%s)", rid, user, name)
+        cursor.close()
+        return redirect('hall page',name)
+    context = dict(hall_name = name)
+    return render_template('review.html', **context) 
 
 if __name__ == "__main__":
   import click

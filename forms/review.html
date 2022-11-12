@@ -1,0 +1,41 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+    {% extends 'base.html' %}
+{% block header %}
+<h1>{% block title %}Review {{hall_name}}{{num}}{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{url_for('register', name = hall_name)}}">
+    <label for="username">Username</label>
+    <input type="text" name="username" required>
+    <br>
+    <label for="food">Food (1-10)</label>
+    <input type="number" name="food" required> 
+    <br>
+    <label for="vibe">Vibe (1-10)</label>
+    <input type="number" name="vibe" required>
+    <br>
+    <label for="staff">Staff (1-10)</label>
+    <input type="number" name="staff" required>
+    <br>
+    <label for="comment">Comments</label>
+    <input type="text" name="comment" required>
+    <input type="submit" value="Register">
+  </form>
+  {% endblock %}
+
+  <p><a href="home page">Go Home</a></p>
+
+</body>
+
+
+</html>
