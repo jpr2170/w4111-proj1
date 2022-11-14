@@ -67,6 +67,18 @@ def plan():
 def dining_plan():
     return render_template("dining_plan.html")
 
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    if request.method == 'POST':
+        hall_name = request.form['hall_name']
+        #g.conn.execute("SELECT hall_name FROM dining_hall WHERE hall_name like '%{hallName}%';")
+        #g.conn.execute("SELECT hall_name FROM dining_hall WHERE hall_name={}".format(hallName))
+
+        cursor = g.conn.execute("SELECT hall_name FROM dining_hall WHERE hall_name like '%(%s)%'", (hall_name))
+
+    return render_template("form_practice.html")
+
 @app.route('/another')
 def another():
     return render_template("another.html")
