@@ -117,7 +117,8 @@ def review(name):
             g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, date, comment) VALUES(%s,%s,%s,%s,%s,%s,%s)", rid, overall, food, vibe, staff, stamp, comment)
             g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, UNI, name)
             return redirect('hall page',name)
-        else: return render_template("auth.html")
+        else: 
+            return render_template("auth.html")
     context = dict(hall_name = name)
     return render_template('review.html', **context) 
 
