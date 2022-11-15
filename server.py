@@ -94,19 +94,26 @@ def hall_page(name):
     hall_name = name
     time = []
     loc = []
-    info = []
+    review = []
+    review_pics = []
     cursor = g.conn.execute("SELECT * FROM dining_hall WHERE hall_name = '{}'".format(name))
     for result in cursor:
         time.append(result[1:3])
         loc.append(result[4:6])
-    cursor = g.conn.execute("SELECT * FROM writes W, review R WHERE W.rid=R.rid AND W.hall_name='{}'".format(name))
-    for result in cursor:
-        info.append(result)
+    cursor = g.conn.execute("SELECT S.username, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND P.rid=W.rid AND W.hall_name='{}'".format(name))
+    if cursor.fetchone()[0] is not None:
+        for result in cursor:
+            review_pics.append(result)
+    else:
+        cursor = g.conn.execute("SELECT S.username, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND W.hall_name='{}'".format(name))
+        for result in cursor:
+            review.append(result)
+    #cursor = g.conn.execute("SELECT S.username, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND W.hall_name='{}'".format(name))
     cursor.close()
-    context = dict(hall_name = hall_name, location = loc, hours = time, review = info)
+    context = dict(hall_name = hall_name, location = loc, hours = time, review = review, pics = review_pics)
     return render_template("hall_page.html", **context)
 
-  
+""" 
 @app.route('/review', methods=['POST'])
 def upload_image():
     if 'file' not in request.files:
@@ -125,7 +132,7 @@ def upload_image():
     else:
         flash('allowed image types are: png, jpg, jpeg')
         return redirect(request.url)
-
+"""
 @app.route('/display/<filename>')
 def display_image(filename):
     #print('display_image filename: ' + filename)
@@ -134,14 +141,17 @@ def display_image(filename):
 @app.route('/review/<name>', methods=['GET', 'POST'])
 def review(name):
     if request.method=='POST':
+        hall_name = name
         UNI = ""
+        url = ""
         user = request.form['username']
         food = int(request.form['food'])
         vibe = int(request.form['vibe'])
         staff = int(request.form['staff'])
         overall = int((food+vibe+staff)/3)
         comment = request.form['comment']
-
+        url = request.form['url']
+        """
         file = request.files['file']
         if file.filename=='':
             return "no image", redirect(request.url)
@@ -149,10 +159,9 @@ def review(name):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return render_template('review.html', filename=filename)
-        
+        """
         cursor = g.conn.execute("SELECT MAX(rid) FROM review")
-        for result in cursor:
-            rid = result[0]
+        rid = cursor.fetchone()[0]
         rid += 1
         stamp = date.today()
         cursor = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(user))
@@ -160,9 +169,11 @@ def review(name):
         cursor.close()
         if UNI != "":
             g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, date, comment) VALUES(%s,%s,%s,%s,%s,%s,%s)", rid, overall, food, vibe, staff, stamp, comment)
-            g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, UNI, name)
-            g.conn.execute("INSERT INTO photos(url, rid) VALUES(%s,%s)", filename, rid)
-            return redirect('hall page',name)
+            g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, UNI, hall_name)
+            if url != "":
+                g.conn.execute("INSERT INTO photos(url, rid) VALUES(%s,%s)", url, rid)
+            context = dict(hall_name=name)
+            return redirect(url_for('hall_page', name=name))
         else: return render_template("auth.html")
     context = dict(hall_name = name)
     return render_template('review.html', **context) 

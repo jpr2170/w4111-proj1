@@ -24,15 +24,23 @@
 
   <h2>Reviews</h2>
   <div>
-    {% for r in review %}
-    <div>User: {{r[1]}}</div>
-    <div>Overall: {{r[4]}}</div>
-    <div>Comments: {{r[9]}}</div>
+    {% for r in pics %}
+    <div>User: {{r[0]}}</div>
+    <div>Overall: {{r[1]}}</div>
+    <div>Comments: {{r[2]}}</div>
+    <img src="{{r[3]}}"/>
     <br>
+    {% endfor %}
+
+    {% for r in review %}
+    <div>User: {{r[0]}}</div>
+    <div>Overall: {{r[1]}}</div>
+    <div>Comments: {{r[2]}}</div>
     {% endfor %}
   </div>
 
   <p><a href="{{url_for('review', name = hall_name)}}">Leave a review</a></p>
+  
   <p><a href="/">Go back home</a></p>
 
 
