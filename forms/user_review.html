@@ -1,0 +1,22 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+    <h1>{{hall_name}}</h1>
+
+    <h2> REVIEWS </h2>
+    <div> 
+        {% for r in user_review %}
+        <div>Dining Hall: {{r[0]}}</div>
+        <div>Overall: {{r[1]}}</div>
+        <div>Comments: {{r[2]}}</div>
+        {% endfor %}
+    </div>
+    <p><a href="/">Go back home</a></p>
+</body>
