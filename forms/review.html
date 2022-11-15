@@ -13,8 +13,33 @@
 <h1>{% block title %}Review {{hall_name}}{% endblock %}</h1>
 {% endblock %}
 
+
 {% block content %}
-<form method="POST" action="{{url_for('review', name = hall_name)}}">
+
+<h2>select file to upload</h2>
+<p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</p>
+
+{% if filename %}
+    <div>
+        <img src="{{ url_for('display_image', filename=filename) }}">
+    </div>
+{% endif %}
+
+
+
+
+
+<form method="POST" action="{{url_for('review', name = hall_name)}}" enctype="multipart/form-data">
     <label for="username">Username</label>
     <input type="text" name="username" required>
     <br>
@@ -29,10 +54,15 @@
     <br>
     <label for="comment">Comments</label>
     <input type="text" name="comment" required>
+    <br>
+    <input type="file" name="file" class="form-control" autocomplete="off">
+    <br>
     <input type="submit" value="Submit">
-  </form>
-  {% endblock %}
 
+
+  </form>
+
+  {% endblock %}
   <p><a href="home page">Go Home</a></p>
 
 </body>
