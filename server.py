@@ -106,7 +106,6 @@ def hall_page(name):
     cursor = g.conn.execute("SELECT S.username, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND P.rid=R.rid AND W.hall_name = '{}'".format(name))
     for result in cursor:
         review_pics.append(result)
-    print(review)
     cursor.close()
     context = dict(hall_name = hall_name, location = loc, hours = time, review = review, photo = review_pics)
     return render_template("hall_page.html", **context)
@@ -134,9 +133,7 @@ def review(name):
         rid += 1
         stamp = date.today()
         cursor = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(user))
-        UNI = cursor.fetchone()[0]
-        cursor.close()
-        if UNI != "":
+        if cursor.fetchone() is not None:
             g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, date, comment) VALUES(%s,%s,%s,%s,%s,%s,%s)", rid, overall, food, vibe, staff, stamp, comment)
             g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, UNI, hall_name)
             if url != "":
@@ -144,6 +141,7 @@ def review(name):
             context = dict(hall_name=name)
             return redirect(url_for('hall_page', name=name))
         else: return render_template("auth.html")
+        cursor.close()
     context = dict(hall_name = name)
     return render_template('review.html', **context) 
 
@@ -152,27 +150,30 @@ def dining_plan():
     return render_template("dining_plan.html")
 
 
-@app.route('/search', methods=['GET', 'POST'])
+@app.route('/search', methods=['GET','POST'])
 def search():
-    print(request.args)
-    username_list = []
-    user_review = []
-    cursor = g.conn.execute("SELECT * FROM student")
-    for res in cursor:
-        username_list.append(res[2:3])
-        
-    if request.method == 'POST':
+    if request.method == "POST":
+        print(request.args)
+        username_list = []
+        review = []
+        review_pics = []
+        cursor = g.conn.execute("SELECT username FROM student")
+        for res in cursor:
+            username_list.append(res[0])
         username = request.form['user']
         if username not in username_list:
             return redirect('/search')
-        uni = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(username))
-        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment FROM writes W, review R, WHERE W.rid=R.rid AND W.uni='{}'".format(uni))
-        for rev in cursor:
-            user_review.append(rev)
+        cursor = g.conn.execute("SELECT S.username, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='' AND W.rid NOT IN (SELECT rid FROM photos)".format(username))
+        for result in cursor:
+            review.append(result)
+        cursor = g.conn.execute("SELECT S.username, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='{}' AND P.rid=R.rid".format(username))
+        for result in cursor:
+            review_pics.append(result)
         cursor.close()
-        context = dict(username=username, user_review = user_review)
-        return redirect(url_for('user_review.html', username = username, user_review = user_review))
-    return render_template("user_search.html")
+        context = dict(username=username, review = review, pics = review_pics)
+        return render_template(url_for('user_review.html', **context))
+    return render_template('user_search.html')
+    
 
 @app.route('/another')
 def another():
