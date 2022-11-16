@@ -163,15 +163,16 @@ def search():
         username = request.form['user']
         if username not in username_list:
             return redirect('/search')
-        cursor = g.conn.execute("SELECT S.username, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='' AND W.rid NOT IN (SELECT rid FROM photos)".format(username))
+        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='' AND W.rid NOT IN (SELECT rid FROM photos)".format(username))
         for result in cursor:
             review.append(result)
-        cursor = g.conn.execute("SELECT S.username, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='{}' AND P.rid=R.rid".format(username))
+        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='{}' AND P.rid=R.rid".format(username))
         for result in cursor:
             review_pics.append(result)
         cursor.close()
         context = dict(username=username, review = review, pics = review_pics)
-        return render_template(url_for('user_review.html', **context))
+        #return redirect(url_for('user_review.html', **context))
+        return render_template('user_review.html', **context)
     return render_template('user_search.html')
     
 
