@@ -119,7 +119,7 @@ def display_image(filename):
 def review(name):
     if request.method=='POST':
         hall_name = name
-        UNI = ""
+        uni= ""
         url = ""
         user = request.form['username']
         food = int(request.form['food'])
@@ -133,9 +133,10 @@ def review(name):
         rid += 1
         stamp = date.today()
         cursor = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(user))
-        if cursor.fetchone() is not None:
+        if cursor != None:
+            uni = cursor.fetchone()[0]
             g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, date, comment) VALUES(%s,%s,%s,%s,%s,%s,%s)", rid, overall, food, vibe, staff, stamp, comment)
-            g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, UNI, hall_name)
+            g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, uni, hall_name)
             if url != "":
                 g.conn.execute("INSERT INTO photos(url, rid) VALUES(%s,%s)", url, rid)
             context = dict(hall_name=name)
@@ -171,22 +172,9 @@ def search():
             review_pics.append(result)
         cursor.close()
         context = dict(username=username, review = review, pics = review_pics)
-        #return redirect(url_for('user_review.html', **context))
         return render_template('user_review.html', **context)
     return render_template('user_search.html')
     
-
-@app.route('/another')
-def another():
-    return render_template("another.html")
-
-
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO test(name) VALUES (%s)', name)
-  return redirect('/')
 
 
 @app.route('/login')
