@@ -100,39 +100,17 @@ def hall_page(name):
     for result in cursor:
         time.append(result[1:3])
         loc.append(result[4:6])
-    cursor = g.conn.execute("SELECT S.username, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND P.rid=W.rid AND W.hall_name='{}'".format(name))
-    if cursor.fetchone()[0] is not None:
-        for result in cursor:
-            review_pics.append(result)
-    else:
-        cursor = g.conn.execute("SELECT S.username, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND W.hall_name='{}'".format(name))
-        for result in cursor:
-            review.append(result)
-    #cursor = g.conn.execute("SELECT S.username, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND W.hall_name='{}'".format(name))
+    cursor = g.conn.execute("SELECT S.username, R.overall, R.comment FROM writes W, review R, student S WHERE W.hall_name='{}' AND W.rid=R.rid AND W.uni=S.uni AND W.rid NOT IN (SELECT rid FROM photos)".format(name))
+    for result in cursor:
+        review.append(result)
+    cursor = g.conn.execute("SELECT S.username, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND P.rid=R.rid AND W.hall_name = '{}'".format(name))
+    for result in cursor:
+        review_pics.append(result)
+    print(review)
     cursor.close()
-    context = dict(hall_name = hall_name, location = loc, hours = time, review = review, pics = review_pics)
+    context = dict(hall_name = hall_name, location = loc, hours = time, review = review, photo = review_pics)
     return render_template("hall_page.html", **context)
 
-""" 
-@app.route('/review', methods=['POST'])
-def upload_image():
-    if 'file' not in request.files:
-        flash('No file part')
-        return redirect(request.url)
-    file = request.files['file']
-    if file.filename== '':
-        flash('NO image selected')
-        return redirect(request.url)
-    if file and allowed_type(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        print('upload_image filename: ' +filename)
-        flash('image uploaded succesfully')
-        return render_template('review.html', filename=filename)
-    else:
-        flash('allowed image types are: png, jpg, jpeg')
-        return redirect(request.url)
-"""
 @app.route('/display/<filename>')
 def display_image(filename):
     #print('display_image filename: ' + filename)
@@ -151,15 +129,6 @@ def review(name):
         overall = int((food+vibe+staff)/3)
         comment = request.form['comment']
         url = request.form['url']
-        """
-        file = request.files['file']
-        if file.filename=='':
-            return "no image", redirect(request.url)
-        if file and allowed_type(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return render_template('review.html', filename=filename)
-        """
         cursor = g.conn.execute("SELECT MAX(rid) FROM review")
         rid = cursor.fetchone()[0]
         rid += 1
@@ -205,33 +174,6 @@ def search():
         return redirect(url_for('user_review.html', username = username, user_review = user_review))
     return render_template("user_search.html")
 
-
-"""
-    li = ["john jay", "jjs place", "ferris booth commons", "faculty house", "chef mikes sub shop"]
-    print(request.args)
-    if request.method == 'POST':
-
-        hall_name = request.form['hall_name']
-
-        time = []
-        loc = []
-        info = []
-        if hall_name.lower() not in li:
-            #flash("Dining Hall not found")
-            return redirect('/')
-
-        cursor = g.conn.execute("SELECT hall_name FROM dining_hall WHERE hall_name='{}'".format(hall_name))
-        for result in cursor:
-            time.append(result[1:3])
-            loc.append(result[4:6])
-        cursor = g.conn.execute("SELECT * FROM writes W, review R WHERE W.rid=R.rid AND W.hall_name='{}'".format(hall_name))
-        for result in cursor:
-            info.append(result)
-        cursor.close()
-        context = dict(hall_name = hall_name, location = loc, hours = time, review = info)
-        return render_template("hall_page.html", **context)
-    return render_template("form_practice.html")
-"""
 @app.route('/another')
 def another():
     return render_template("another.html")
