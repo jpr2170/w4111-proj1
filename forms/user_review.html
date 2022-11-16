@@ -12,11 +12,18 @@
 
     <h2> REVIEWS </h2>
     <div> 
-        {% for r in user_review %}
+        {% for r in review %}
         <div>Dining Hall: {{r[0]}}</div>
         <div>Overall: {{r[1]}}</div>
         <div>Comments: {{r[2]}}</div>
+        <div></div>
         {% endfor %}
+        {% for p in pics %}
+        <div>Dining Hall: {{p[0]}}</div>
+        <div>Overall: {{p[1]}}</div>
+        <div>Comments: {{p[2]}}</div>
+        <img src="{{p[3]}}"/>   
+        {% endfor  %}
     </div>
     <p><a href="/">Go back home</a></p>
 </body>
