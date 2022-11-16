@@ -7,12 +7,19 @@
     </style>
 
     <body>
-        <h1>Search for a user</h1>
+        {% block header %}
+        <h1>{% block title %}Search for a user{% endblock %}</h1>
+        {% endblock %}
 
-        <form action="{{url_for('search')}}" method="POST">
-            <label for="usersearch">Please enter user:</label>
+        {% block content %}
+        <!--<form action="{{url_for('search')}}" method="POST">-->
+        <form action="/search" method="POST">
+            <label for="user">Please enter user:</label>
             <input type="text" name="user"><br>
             <input type="submit" value="Submit">
         </form>
+        {% endblock %}
+
+        <p><a href="/">Go back home</a></p>
     </body>
 </html>

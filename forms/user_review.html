@@ -12,8 +12,16 @@
 
     <h2> REVIEWS </h2>
     <div> 
+        {% for r in pics %}
+        <div>User: {{r[0]}}</div>
+        <div>Overall: {{r[1]}}</div>
+        <div>Comments: {{r[2]}}</div>
+        <img src="{{r[3]}}"/>
+        <br>
+        {% endfor %}
+
         {% for r in user_review %}
-        <div>Dining Hall: {{r[0]}}</div>
+        <div>User: {{r[0]}}</div>
         <div>Overall: {{r[1]}}</div>
         <div>Comments: {{r[2]}}</div>
         {% endfor %}

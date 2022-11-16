@@ -197,14 +197,35 @@ def search():
         if username not in username_list:
             return redirect('/search')
         uni = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(username))
-        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment FROM writes W, review R, WHERE W.rid=R.rid AND W.uni='{}'".format(uni))
+        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment FROM writes W, review R WHERE W.rid=R.rid AND W.uni='{}'".format(uni))
         for rev in cursor:
             user_review.append(rev)
         cursor.close()
-        context = dict(username=username, user_review = user_review)
+        #context = dict(username=username, user_review = user_review)
+        #return render_template("user_review.html")
         return redirect(url_for('user_review.html', username = username, user_review = user_review))
     return render_template("user_search.html")
 
+@app.route('/user page/<name>')
+def user_page(name):
+    print(request.args)
+    username = name
+    review = []
+    review_pics = []
+    
+    uni = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(username))
+    cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment, P.url FROM writes W, review R, photos P WHERE W.rid=R.rid AND P.rid=W.rid AND W.uni='{}'".format(uni))
+    if cursor.fetchone()[0] is not None:
+        for result in cursor:
+            review_pics.append(result)
+    else:
+        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment FROM writes W, review R WHERE W.rid=R.rid AND W.uni='{}'".format(username))
+        for result in cursor:
+            review.append(result)
+    #cursor = g.conn.execute("SELECT S.username, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND W.hall_name='{}'".format(name))
+    cursor.close()
+    context = dict(username = username, review = review, pics = review_pics)
+    return render_template("user_review.html", **context)
 
 """
     li = ["john jay", "jjs place", "ferris booth commons", "faculty house", "chef mikes sub shop"]
@@ -232,6 +253,7 @@ def search():
         return render_template("hall_page.html", **context)
     return render_template("form_practice.html")
 """
+
 @app.route('/another')
 def another():
     return render_template("another.html")
