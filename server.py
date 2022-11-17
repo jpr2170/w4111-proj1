@@ -171,8 +171,40 @@ def search():
         context = dict(username=username, review = review, pics = review_pics, friends = friends)
         return render_template('user_review.html', **context)
     return render_template('user_search.html')
-    
 
+
+    
+@app.route('/add', methods=['GET', 'POST'])
+def add_friend():
+    print(request.args)
+    if request.method=='POST':
+        username_list = []
+        cursor = g.conn.execute("SELECT username FROM student")
+        for res in cursor:
+            username_list.append(res[0])
+
+        username1 = request.form['username1']
+        if username1 not in username_list:
+            context = dict(username=username1)
+            return render_template('search_fail.html', **context)
+
+        cursor = g.conn.execute("SELECT uni FROM student WHERE student.username='{}'".format(username1))
+        uni1 = cursor.fetchone()[0]
+
+        username2 = request.form['username2']
+        if username2 not in username_list:
+            context = dict(username=username2)
+            return render_template('search_fail.html', **context)
+
+        cursor = g.conn.execute("SELECT uni FROM student WHERE student.username='{}'".format(username2))
+        uni2 = cursor.fetchone()[0]
+
+        cursor = g.conn.execute("INSERT INTO is_friends(uni1, uni2) VALUES (%s, %s)", uni1, uni2)
+
+        cursor.close()
+        return redirect('/')
+        
+    return render_template('add_friend.html')
 
 if __name__ == "__main__":
   import click

@@ -1,0 +1,32 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+<body>
+    {% block header %}
+  <h1>{% block title %}add friend{% endblock %}</h1>
+    {% endblock %}
+
+{% block content %}
+  <form method="POST" action="/add">
+    <label for="username1">Your Username</label>
+    <input type="text" name="username1" required>
+    
+    <label for="username2">Username of friend you want to add</label>
+    <input type="text" name="username2" required>
+
+
+    <input type="submit" value="Submit">
+  </form>
+  {% endblock %}
+
+  <p><a href="/">Go Home</a></p>
+
+</body>
+
+
+</html>
