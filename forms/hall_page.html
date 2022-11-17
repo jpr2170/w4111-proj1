@@ -10,6 +10,7 @@
 <body>
     
     <h1>{{hall_name}}</h1>
+    <h2>Overall Rating: {{rating}}</h2>
 
   <div>
     {% for h in hours %}
@@ -27,8 +28,11 @@
     {% for r in photo %}
     <div>User: {{r[0]}}</div>
     <div>Overall: {{r[1]}}</div>
-    <div>Comments: {{r[2]}}</div>
-    <img src="{{r[3]}}" width="300" height="300"/>
+    <div>Food: {{r[2]}}</div>
+    <div>Vibe: {{r[3]}}</div>
+    <div>Staff: {{r[4]}}</div>
+    <div>Comments: {{r[5]}}</div>
+    <img src="{{r[6]}}" width="300" height="300"/>
     <br>
     </br>
     {% endfor %}
@@ -36,6 +40,9 @@
     <div>User: {{r[0]}}</div>
     <div>Overall: {{r[1]}}</div>
     <div>Comments: {{r[2]}}</div>
+    <div>Food: {{r[3]}}</div>
+    <div>Vibe: {{r[4]}}</div>
+    <div>Staff: {{r[5]}}</div>
     <br></br>
     {% endfor %}
   </div>

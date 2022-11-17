@@ -25,14 +25,6 @@ DATABASEURI = "postgresql://jpr2170:5019@34.75.94.195/proj1part2"
 
 engine = create_engine(DATABASEURI)
 
-UPLOAD_FOLDER = 'static/uploads/'
-app.secret_key="canyonjack"
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16*1024*1024
-ALLOWED_EXT = set(['png', 'jpg', 'jpeg'])
-def allowed_type(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXT
-
 
 @app.before_request
 def before_request():
@@ -101,26 +93,23 @@ def hall_page(name):
     for result in cursor:
         time.append(result[1:3])
         loc.append(result[4:6])
-    cursor = g.conn.execute("SELECT S.username, R.overall, R.comment FROM writes W, review R, student S WHERE W.hall_name='{}' AND W.rid=R.rid AND W.uni=S.uni AND W.rid NOT IN (SELECT rid FROM photos)".format(name))
+    cursor = g.conn.execute("SELECT AVG(R.overall) FROM review R, writes W WHERE R.rid=W.rid AND W.hall_name='{}'".format(name))
+    rating = cursor.fetchone()[0]
+    cursor = g.conn.execute("SELECT S.username, R.overall, R.food, R.vibe, R.staff, R.comment FROM writes W, review R, student S WHERE W.hall_name='{}' AND W.rid=R.rid AND W.uni=S.uni AND W.rid NOT IN (SELECT rid FROM photos)".format(name))
     for result in cursor:
         review.append(result)
-    cursor = g.conn.execute("SELECT S.username, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND P.rid=R.rid AND W.hall_name = '{}'".format(name))
+    cursor = g.conn.execute("SELECT S.username, R.overall, R.food, R.vibe, R.staff, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND P.rid=R.rid AND W.hall_name = '{}'".format(name))
     for result in cursor:
         review_pics.append(result)
     cursor.close()
-    context = dict(hall_name = hall_name, location = loc, hours = time, review = review, photo = review_pics)
+    context = dict(hall_name = hall_name, location = loc, hours = time, review = review, photo = review_pics, rating = rating)
     return render_template("hall_page.html", **context)
 
-@app.route('/display/<filename>')
-def display_image(filename):
-    #print('display_image filename: ' + filename)
-    return redirect(url_for('static', filename='uploads/' + filename), code=301)
-   
 @app.route('/review/<name>', methods=['GET', 'POST'])
 def review(name):
     if request.method=='POST':
         hall_name = name
-        uni= ""
+        #uni= ""
         url = ""
         user = request.form['username']
         food = int(request.form['food'])
@@ -147,10 +136,6 @@ def review(name):
         cursor.close()
     context = dict(hall_name = name)
     return render_template('review.html', **context) 
-
-@app.route('/dining_plan')
-def dining_plan():
-    return render_template("dining_plan.html")
 
 
 @app.route('/search', methods=['GET','POST'])
@@ -187,12 +172,6 @@ def search():
         return render_template('user_review.html', **context)
     return render_template('user_search.html')
     
-
-
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
 
 
 if __name__ == "__main__":
