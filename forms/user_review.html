@@ -25,5 +25,12 @@
         <img src="{{p[3]}}"/>   
         {% endfor  %}
     </div>
+    <div>
+    <h2>FRIENDS</h2>
+    <h3>{{username}} is friends with:</h3>
+    {% for f in friends %}
+    <li>{{f}}</li>
+    {% endfor %}
+    </div>
     <p><a href="/">Go back home</a></p>
 </body>

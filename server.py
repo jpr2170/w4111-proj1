@@ -96,6 +96,7 @@ def hall_page(name):
     loc = []
     review = []
     review_pics = []
+    pics = []
     cursor = g.conn.execute("SELECT * FROM dining_hall WHERE hall_name = '{}'".format(name))
     for result in cursor:
         time.append(result[1:3])
@@ -133,8 +134,9 @@ def review(name):
         rid += 1
         stamp = date.today()
         cursor = g.conn.execute("SELECT uni FROM student WHERE username='{}'".format(user))
-        if cursor != None:
-            uni = cursor.fetchone()[0]
+        uni = cursor.fetchone()
+        if uni != None:
+            uni = uni[0]
             g.conn.execute("INSERT INTO review(rid, overall, food, vibe, staff, date, comment) VALUES(%s,%s,%s,%s,%s,%s,%s)", rid, overall, food, vibe, staff, stamp, comment)
             g.conn.execute("INSERT INTO writes(rid, uni, hall_name) VALUES(%s,%s,%s)", rid, uni, hall_name)
             if url != "":
@@ -158,20 +160,30 @@ def search():
         username_list = []
         review = []
         review_pics = []
+        friends = []
         cursor = g.conn.execute("SELECT username FROM student")
         for res in cursor:
             username_list.append(res[0])
         username = request.form['user']
         if username not in username_list:
-            return redirect('/search')
+            context = dict(username=username)
+            return render_template('search_fail.html', **context)
+        cursor = g.conn.execute("SELECT uni FROM student WHERE student.username='{}'".format(username))
+        uni = cursor.fetchone()[0]
         cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='' AND W.rid NOT IN (SELECT rid FROM photos)".format(username))
         for result in cursor:
             review.append(result)
         cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='{}' AND P.rid=R.rid".format(username))
         for result in cursor:
             review_pics.append(result)
+        cursor = g.conn.execute("SELECT * FROM is_friends WHERE uni1='{}' OR uni2='{}'".format(uni,uni))
+        for result in cursor:
+            if result[0] != uni:
+                friends.append(result[0])
+            else:
+                friends.append(result[1])
         cursor.close()
-        context = dict(username=username, review = review, pics = review_pics)
+        context = dict(username=username, review = review, pics = review_pics, friends = friends)
         return render_template('user_review.html', **context)
     return render_template('user_search.html')
     
