@@ -74,13 +74,34 @@ def register():
         year = request.form['year']
         plan_name = request.form['plan_name']
         if len(username) > 15:
-            render_template('auth.html')
+            error = "long"
+            context = dict(length = error)
+            return render_template('register_fail.html', **context)
         cursor = g.conn.execute("SELECT uni FROM student WHERE uni='{}'".format(uni))
         if cursor.fetchone():
-            return render_template("register_fail.html")
+            error = "uni"
+            context = dict(uni = error)
+            return render_template("register_fail.html", **context)
         cursor = g.conn.execute("SELECT username FROM student WHERE username='{}'".format(username))
         if cursor.fetchone():
-            return render_template("register_fail.html")
+            error = "username"
+            context = dict(username = error)
+            return render_template("register_fail.html", **context)
+        try:
+            year = int(year)
+        except ValueError:
+            error = "year"
+            context = dict(year = error)
+            return render_template("register_fail.html", **context)
+        cursor = g.conn.execute("SELECT plan_name FROM dining_plan")
+        plan = False
+        for result in cursor:
+            if result[0] == plan_name:
+                plan = True
+        if plan == False:
+            error = "plan"
+            context = dict(plan = error)
+            return render_template("register_fail.html", **context)
         g.conn.execute("INSERT INTO student(uni,name,username,year,plan_name) VALUES (%s, %s, %s, %s, %s)", uni, name, username, year, plan_name)
         return redirect('/')
     if request.method == 'GET':

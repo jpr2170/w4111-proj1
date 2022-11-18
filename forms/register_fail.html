@@ -8,7 +8,25 @@
 
 
 <body>
-    <h1>We're sorry, the uni or username you entered is already registered in our database</h1>
+    {% if uni != null %}
+    <h1>We're sorry, the uni you entered is already registered in our database</h1>
+    {% endif %}
+    {% if username != null %}
+    <h1>We're sorry, the username you entered is already registered in our database</h1>
+    {% endif %}
+    {% if length != null %}
+    <h1>We're sorry, the username you entered is too long</h1>
+    <h2>Please try again with one that is no longer than 15 characters</h2>
+    {% endif%}
+    {% if year != null %}
+    <h1>We're sorry, the year you enter could not be included in our database</h1>
+    <h2>Please make sure you entered a number</h2>
+    {% endif %}
+    {% if plan != null %}
+    <h1>We're sorry, the plan you entered could not be included in our database</h1>
+    <h2>Please make sure you entered one of the plans listed</h2>
+    {% endif %}
+    <p><a href="{{url_for('register')}}">Register</a></p>
     <p><a href="search">Search for users </a></p>
     <p><a href="/">Go back home</a></p>
 </body>
