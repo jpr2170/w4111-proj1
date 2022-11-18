@@ -95,6 +95,7 @@ def hall_page(name):
         loc.append(result[4:6])
     cursor = g.conn.execute("SELECT AVG(R.overall) FROM review R, writes W WHERE R.rid=W.rid AND W.hall_name='{}'".format(name))
     rating = cursor.fetchone()[0]
+    rating = float('%.2g' % rating)
     cursor = g.conn.execute("SELECT S.username, R.overall, R.food, R.vibe, R.staff, R.comment FROM writes W, review R, student S WHERE W.hall_name='{}' AND W.rid=R.rid AND W.uni=S.uni AND W.rid NOT IN (SELECT rid FROM photos)".format(name))
     for result in cursor:
         review.append(result)
@@ -198,7 +199,16 @@ def add_friend():
 
         cursor = g.conn.execute("SELECT uni FROM student WHERE student.username='{}'".format(username2))
         uni2 = cursor.fetchone()[0]
-
+        
+        cursor = g.conn.execute("SELECT uni1, uni2 FROM is_friends")
+        group = {uni1,uni2}
+        in_friends = False
+        for result in cursor:
+            try_set = {result[0],result[1]}
+            if group == try_set:
+                in_friends = True
+        if in_friends == True:
+            return redirect('/')
         cursor = g.conn.execute("INSERT INTO is_friends(uni1, uni2) VALUES (%s, %s)", uni1, uni2)
 
         cursor.close()
