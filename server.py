@@ -62,7 +62,6 @@ def plan():
     for result in cursor:
         plans.append(result)  # can also be accessed using result[0]
     cursor.close()
-
     context = dict(plan = plans)
     return render_template("plan.html", **context)
 
@@ -74,9 +73,18 @@ def register():
         username = request.form['username']
         year = request.form['year']
         plan_name = request.form['plan_name']
+        if len(username) > 15:
+            render_template('auth.html')
         g.conn.execute("INSERT INTO student(uni,name,username,year,plan_name) VALUES (%s, %s, %s, %s, %s)", uni, name, username, year, plan_name)
         return redirect('/')
-    return render_template('auth.html')
+    if request.method == 'GET':
+        plans = []
+        cursor = g.conn.execute("SELECT plan_name FROM dining_plan")
+        for result in cursor:
+            plans.append(result)
+        cursor.close()
+        context = dict(plans = plans)
+        return render_template("auth.html", **context)
 
 
 
@@ -156,10 +164,10 @@ def search():
             return render_template('search_fail.html', **context)
         cursor = g.conn.execute("SELECT uni FROM student WHERE student.username='{}'".format(username))
         uni = cursor.fetchone()[0]
-        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='' AND W.rid NOT IN (SELECT rid FROM photos)".format(username))
+        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.food, R.vibe, R.staff, R.comment FROM writes W, review R, student S WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='{}' AND W.rid NOT IN (SELECT rid FROM photos)".format(username))
         for result in cursor:
             review.append(result)
-        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='{}' AND P.rid=R.rid".format(username))
+        cursor = g.conn.execute("SELECT W.hall_name, R.overall, R.food, R.vibe, R.staff, R.comment, P.url FROM writes W, review R, student S, photos P WHERE W.rid=R.rid AND W.uni=S.uni AND S.username='{}' AND P.rid=R.rid".format(username))
         for result in cursor:
             review_pics.append(result)
         cursor = g.conn.execute("SELECT * FROM is_friends WHERE uni1='{}' OR uni2='{}'".format(uni,uni))

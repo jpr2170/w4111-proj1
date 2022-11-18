@@ -9,26 +9,32 @@
 
 <body>
     {% extends 'base.html' %}
-{% block header %}
+    {% block header %}
   <h1>{% block title %}Register{% endblock %}</h1>
-{% endblock %}
+  {% endblock %}
 
-{% block content %}
+  {% block content %}
   <form method="POST" action="/register">
     <label for="uni">UNI</label>
     <input type="text" name="uni" id="uni" required> 
     <label for="name">Name</label>
     <input type="text" name="name" required>
-    <label for="username">Username</label>
+    <label for="username">Username (max 15 characters)</label>
     <input type="text" name="username" required>
+    <br>
     <label for="year">Year</label>
     <input type="int" name="year" required>
     <label for="plan_name">Plan</label>
     <input type="text" name="plan_name" required>
     <input type="submit" value="Register">
   </form>
-  {% endblock %}
-
+  <h2>Plan Options</h2>
+  <div>
+  {% for p in plans %}
+  <li>{{p[0]}}</li>
+  {% endfor %}
+  </div>
+  {% endblock%}
   <p><a href="home page">Go Home</a></p>
 
 </body>
