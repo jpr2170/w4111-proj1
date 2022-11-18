@@ -75,6 +75,12 @@ def register():
         plan_name = request.form['plan_name']
         if len(username) > 15:
             render_template('auth.html')
+        cursor = g.conn.execute("SELECT uni FROM student WHERE uni='{}'".format(uni))
+        if cursor.fetchone():
+            return render_template("register_fail.html")
+        cursor = g.conn.execute("SELECT username FROM student WHERE username='{}'".format(username))
+        if cursor.fetchone():
+            return render_template("register_fail.html")
         g.conn.execute("INSERT INTO student(uni,name,username,year,plan_name) VALUES (%s, %s, %s, %s, %s)", uni, name, username, year, plan_name)
         return redirect('/')
     if request.method == 'GET':
